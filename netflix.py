@@ -832,7 +832,7 @@ class Netflix(object):
         """
         logger.debug('尝试拉取最新邮件，以监听是否有重置密码相关的邮件')
 
-        with imaplib.IMAP4_SSL('imap.gmail.com', 993) as M:
+        with imaplib.IMAP4_SSL('imap.ym.163.com', 993) as M:
             M.login(self.BOT_MAIL_USERNAME, self.BOT_MAIL_PASSWORD)
             status, total = M.select('INBOX', readonly=True)  # readonly=True 则邮件将不会被标记为已读
 
@@ -1097,6 +1097,10 @@ class Netflix(object):
                 host = 'smtp.163.com'
                 secure = 'ssl'
                 port = 465
+            elif '@pando.ooo' in username:
+                host = 'smtp.ym.163.com'
+                secure = 'ssl'
+                port = 994
             else:
                 raise ValueError(f'「{username}」 是不受支持的邮箱。目前仅支持谷歌邮箱、QQ邮箱以及163邮箱，推荐使用谷歌邮箱。')
 
@@ -1444,7 +1448,7 @@ class Netflix(object):
             n = item.get('n')
 
             try:
-                self.pipeline((u, p, n), self._login, self.__handle_account_lock, self.__handle_account_name,
+                self.pipeline((u, p, n), self._login, self.__handle_account_lock, #self.__handle_account_name,
                               self._logout)
             except UserWarning as e:
                 logger.debug(str(e))
@@ -1454,7 +1458,7 @@ class Netflix(object):
     @catch_exception
     def run(self):
         logger.info('当前程序版本为 ' + __version__)
-        logger.info('开始监听密码被改邮件')
+        # logger.info('开始监听密码被改邮件')
 
         # 监听密码被改邮件
         last_protection_time = time.time()
@@ -1554,3 +1558,4 @@ class Netflix(object):
 if __name__ == '__main__':
     Netflix = Netflix()
     Netflix.run()
+    
