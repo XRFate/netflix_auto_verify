@@ -64,21 +64,21 @@ def catch_exception(origin_func):
         except AssertionError as e:
             logger.error(f'参数错误：{str(e)}')
         except NoSuchElementException as e:
-            logger.error('匹配元素超时，超过 {} 秒依然没有发现元素：{}', Netflix.TIMEOUT, str(e))
+            logger.error('匹配元素超时，超过 {} 秒依然没有发现元素：{}', netflix.TIMEOUT, str(e))
         except TimeoutException as e:
-            logger.error(f'查找元素超时或请求超时：{str(e)} [{Netflix.driver.current_url}]')
+            logger.error(f'查找元素超时或请求超时：{str(e)} [{netflix.driver.current_url}]')
         except WebDriverException as e:
             logger.error(f'未知错误：{str(e)}')
         except Exception as e:
             logger.error('出错：{} 位置：{}', str(e), traceback.format_exc())
         finally:
-            Netflix.driver.quit()
+            netflix.driver.quit()
             logger.info('已关闭浏览器，释放资源占用')
 
     return wrapper
 
 
-class Netflix(object):
+class netflix(object):
     # 超时秒数
     # 如果同时设置了显式等待和隐式等待，则 webdriver 会取二者中更大的时间
     TIMEOUT = 24
@@ -102,14 +102,14 @@ class Netflix(object):
     # 密码被重置邮件正则
     PWD_HAS_BEEN_CHANGED_REGEX = re.compile(
         r'https?://.*?netflix\.com/YourAccount\?(?:lnktrk=EMP&g=[^&]+&lkid=URL_YOUR_ACCOUNT_2|g=[^&]+&lkid=URL_YOUR_ACCOUNT&lnktrk=EVO)', re.I)
-
+    TRAVEL_URL_REGEX = re.compile(r'https?://.*?netflix\.com/account/travel[^]]+', re.I)
     # 奈飞强迫用户修改密码
     FORCE_CHANGE_PASSWORD_REGEX = re.compile(r'https?://www\.netflix\.com/LoginHelp.*?lkid=URL_LOGIN_HELP', re.I)
 
     MAIL_SYMBOL_REGEX = re.compile('{(?!})|(?<!{)}')
 
     def __init__(self):
-        Netflix.check_py_version()
+        netflix.check_py_version()
 
         # 命令行参数
         self.args = self.get_all_args()
@@ -124,7 +124,7 @@ class Netflix(object):
 
         self.options = webdriver.ChromeOptions()
 
-        self.options.add_argument(f'user-agent={Netflix.USER_AGENT}')
+        self.options.add_argument(f'user-agent={netflix.USER_AGENT}')
         self.options.add_experimental_option('excludeSwitches', ['enable-automation'])
         self.options.add_experimental_option('useAutomationExtension', False)
         self.options.add_argument('--disable-extensions')  # 禁用扩展
@@ -168,7 +168,7 @@ class Netflix(object):
             })
 
         # 通用显式等待实例
-        self.wait = WebDriverWait(self.driver, timeout=Netflix.TIMEOUT, poll_frequency=0.5)
+        self.wait = WebDriverWait(self.driver, timeout=netflix.TIMEOUT, poll_frequency=0.5)
 
         # 测试无头浏览器特征是否正确隐藏
         if self.args.test:
@@ -193,7 +193,7 @@ class Netflix(object):
         self.BOT_MAIL_PASSWORD = os.getenv('BOT_MAIL_PASSWORD')
         assert self.BOT_MAIL_PASSWORD, '请在 .env 文件配置 BOT_MAIL_PASSWORD 的值，程式用于登录被监听的邮箱'
 
-        self.MULTIPLE_NETFLIX_ACCOUNTS = Netflix._parse_multiple_accounts()
+        self.MULTIPLE_NETFLIX_ACCOUNTS = netflix._parse_multiple_accounts()
 
         # 获取最近几天的邮件
         self.day = 3
@@ -205,7 +205,7 @@ class Netflix(object):
         self.max_num_of_attempts = 12
 
         self.first_time = []
-        self.today = Netflix.today_()
+        self.today = netflix.today_()
 
         # 线程池
         self.max_workers = self.args.max_workers
@@ -280,7 +280,7 @@ class Netflix(object):
         """
         message = f'查找 id 为 {id} 的元素未果' if not message else message
 
-        if not ignored_exceptions and timeout == Netflix.TIMEOUT and not poll_frequency:
+        if not ignored_exceptions and timeout == netflix.TIMEOUT and not poll_frequency:
             el = self.wait.until(EC.visibility_of_element_located((By.ID, id)), message)
         else:
             el = WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll_frequency if poll_frequency else 0.5,
@@ -310,7 +310,7 @@ class Netflix(object):
         """
         message = f'查找 class name 为 {class_name} 的元素未果' if not message else message
 
-        if not ignored_exceptions and timeout == Netflix.TIMEOUT and not poll_frequency:
+        if not ignored_exceptions and timeout == netflix.TIMEOUT and not poll_frequency:
             el = self.wait.until(EC.visibility_of_element_located((By.CLASS_NAME, class_name)), message)
         else:
             el = WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll_frequency if poll_frequency else 0.5,
@@ -340,7 +340,7 @@ class Netflix(object):
         """
         message = f'查找 xpath 为 {xpath} 的元素未果' if not message else message
 
-        if not ignored_exceptions and timeout == Netflix.TIMEOUT and not poll_frequency:
+        if not ignored_exceptions and timeout == netflix.TIMEOUT and not poll_frequency:
             el = self.wait.until(EC.visibility_of_element_located((By.XPATH, xpath)), message)
         else:
             el = WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll_frequency if poll_frequency else 0.5,
@@ -358,7 +358,7 @@ class Netflix(object):
         """
         根据 tag name 查找元素
 
-        元素必须是已加载且可见才能寻到，如若未指定超时时间和异常处理等相关参数，则优先使用前期准备好的 WebDriverWait 实例，不再重复实例化
+        元素必须是已加载且可见才能寻到，如若未指定超时时间和异常处理等相关参数，则优先使用前期准备好的 WebDriverWait ���例，不再重复实例化
         :param tag_name:
         :param timeout:
         :param ignored_exceptions:
@@ -370,7 +370,7 @@ class Netflix(object):
         """
         message = f'查找 tag name 为 {tag_name} 的元素未果' if not message else message
 
-        if not ignored_exceptions and timeout == Netflix.TIMEOUT and not poll_frequency:
+        if not ignored_exceptions and timeout == netflix.TIMEOUT and not poll_frequency:
             el = self.wait.until(EC.visibility_of_element_located((By.TAG_NAME, tag_name)), message)
         else:
             el = WebDriverWait(self.driver, timeout=timeout, poll_frequency=poll_frequency if poll_frequency else 0.5,
@@ -407,7 +407,7 @@ class Netflix(object):
         # 多账户，每次登录前需要清除 cookies
         self.driver.delete_all_cookies()
 
-        self.driver.get(Netflix.LOGIN_URL)
+        self.driver.get(netflix.LOGIN_URL)
 
         username_input_el = self.find_element_by_id('id_userLoginId')
         username_input_el.clear()
@@ -445,7 +445,7 @@ class Netflix(object):
 
         self.driver.delete_all_cookies()
 
-        self.driver.get(Netflix.FORGOT_PASSWORD_URL)
+        self.driver.get(netflix.FORGOT_PASSWORD_URL)
 
         forgot_pwd = self.find_element_by_id('forgot_password_input')
         forgot_pwd.clear()
@@ -478,7 +478,7 @@ class Netflix(object):
         :return:
         """
         try:
-            self.driver.get(Netflix.RESET_PASSWORD_URL)
+            self.driver.get(netflix.RESET_PASSWORD_URL)
 
             curr_pwd = self.find_element_by_id('id_currentPassword')
             curr_pwd.clear()
@@ -707,7 +707,7 @@ class Netflix(object):
         if isinstance(date, bytes):
             date = date.decode(encoding)
 
-        logger.debug(f'\nSubject: {subject}\nFrom: {from_}\nDate: {date}')
+        # logger.debug(f'\nSubject: {subject}\nFrom: {from_}\nDate: {date}')
 
         resp['subject'] = subject
         resp['from'] = from_
@@ -757,7 +757,16 @@ class Netflix(object):
         :param text:
         :return:
         """
-        return Netflix.PWD_HAS_BEEN_CHANGED_REGEX.search(text) is not None
+        return netflix.PWD_HAS_BEEN_CHANGED_REGEX.search(text) is not None
+
+    @staticmethod
+    def is_travel_mail(text: str) -> bool:
+        """
+        是否旅行邮件
+        :param text:
+        :return:
+        """
+        return netflix.TRAVEL_URL_REGEX.search(text) is not None
 
     @staticmethod
     def is_password_reset_request(text: str):
@@ -766,7 +775,7 @@ class Netflix(object):
         :param text:
         :return:
         """
-        return Netflix.RESET_MAIL_REGEX.search(text) is not None
+        return netflix.RESET_MAIL_REGEX.search(text) is not None
 
     @staticmethod
     def is_force_change_password_request(text: str):
@@ -775,7 +784,7 @@ class Netflix(object):
         :param text:
         :return:
         """
-        return Netflix.FORCE_CHANGE_PASSWORD_REGEX.search(text) is not None
+        return netflix.FORCE_CHANGE_PASSWORD_REGEX.search(text) is not None
 
     def get_mail_last_id(self, netflix_account_email: str):
         """
@@ -830,25 +839,27 @@ class Netflix(object):
         :param onlySubject:
         :return:
         """
-        logger.debug('尝试拉取最新邮件，以监听是否有重置密码相关的邮件')
+        # logger.debug('尝试拉取最新邮件，以监听是否有重置密码相关的邮件')
 
         with imaplib.IMAP4_SSL('imap.ym.163.com', 993) as M:
-            M.login(self.BOT_MAIL_USERNAME, self.BOT_MAIL_PASSWORD)
+            M.login(netflix_account_email, self.BOT_MAIL_PASSWORD)
             status, total = M.select('INBOX', readonly=True)  # readonly=True 则邮件将不会被标记为已读
-
+            logger.debug(f'邮箱 {netflix_account_email} 在 INBOX 中共有 {total} 封邮件')
             # https://gist.github.com/martinrusev/6121028
             # https://stackoverflow.com/questions/5621341/search-before-after-with-pythons-imaplib
             after_date = (datetime.date.today() - datetime.timedelta(self.day)).strftime(
                 '%d-%b-%Y')  # 仅需要最近 N 天的邮件，%b 表示字符月份
-            criteria = f'(TO "<{netflix_account_email}>" SENTSINCE "{after_date}")'
-            status, data = M.search(None, criteria)
+            # Search all emails in inbox without any filters
+            criteria = [ 'SENTSINCE', after_date]
+            status, data = M.search('UTF-8', *criteria)
             if status != 'OK':
-                raise Exception('通过发信人以及送信时间过滤邮件时出错')
-
+                raise Exception('搜索所有邮件时出错')
             last_id = self.get_mail_last_id(netflix_account_email)
+            # logger.debug(f'邮箱 {self.BOT_MAIL_USERNAME} 在 INBOX 中共有 {total} 封邮件，其中最后读取的邮件 ID 为 {last_id}')
             data = data[0].split()[::-1]
             for num in data:
                 id = int(num)
+                logger.debug(f'当前邮件 ID 为 {id}')
                 if id <= last_id:  # 只要最新未读的
                     continue
 
@@ -859,8 +870,8 @@ class Netflix(object):
                     continue
 
                 # 解析邮件
-                resp = Netflix.parse_mail(mail_data[0][1], onlySubject)
-
+                resp = netflix.parse_mail(mail_data[0][1], onlySubject)
+                # logger.debug(f'已成功解析邮件，邮件内容为：{resp}')
                 # 记录邮件 ID，之后此邮箱的此类型邮件必须大于此 ID 才有效，且此 ID 跟随 Netflix 账户
                 self.set_mail_last_id(netflix_account_email, id)
 
@@ -883,7 +894,7 @@ class Netflix(object):
         # 定义事件类型 0：未知 1：用户恶意修改密码 2：Netflix 强迫用户修改密码
         event_type = 0
 
-        if Netflix.is_password_reset_result(resp['text']):  # 检测到有用户恶意修改密码
+        if netflix.is_password_reset_result(resp['text']):  # 检测到有用户恶意修改密码
             logger.info('检测到有人修改了 Netflix 账户 {} 的密码', netflix_account_email)
 
             event_type = 1
@@ -909,12 +920,13 @@ class Netflix(object):
                 return None
 
             return True, event_type
-        elif Netflix.is_force_change_password_request(resp['text']):  # 检测到奈飞强迫用户修改密码
+        elif netflix.is_force_change_password_request(resp['text']):  # 检测到奈飞强迫用户修改密码
             logger.info('检测到 Netflix 以安全起见，强迫用户修改账户 {} 的密码', netflix_account_email)
 
             event_type = 2
 
             return True, event_type
+
 
     def pwd_reset_request_mail_listener(self, netflix_account_email) -> str or None:
         """
@@ -929,7 +941,7 @@ class Netflix(object):
         if resp and self.is_password_reset_request(resp.get('text', '')):
             logger.info('Netflix 账户 {} 已收到请求重置密码的邮件，开始提取重置链接', netflix_account_email)
 
-            match = Netflix.RESET_URL_REGEX.search(resp['text'])
+            match = netflix.RESET_URL_REGEX.search(resp['text'])
             if not match:
                 raise Exception('已命中重置密码邮件，但是未能正确提取重置密码链接，请调查一下')
 
@@ -939,6 +951,29 @@ class Netflix(object):
             return match.group(0)
 
         return None
+
+    def travel_mail_listener(self, netflix_account_email) -> str or None:
+        """
+        监听旅行邮件
+        :param netflix_account_email:
+        :return:
+        """
+        # 拉取最新邮件
+        resp = self.__fetch_mail(netflix_account_email)
+        if resp and netflix.is_travel_mail(resp['text']):
+            logger.info('检测到 Netflix 账户 {} 收到旅行邮件', netflix_account_email)
+
+            match = netflix.TRAVEL_URL_REGEX.search(resp['text'])
+            if not match:
+                raise Exception('已命中旅行邮件，但是未能正确提取旅行链接，请调查一下')
+
+            logger.info('已命中旅行邮件')
+
+            return match.group(0)
+        else:
+            logger.info('未命中旅行邮件')
+
+            return None
 
     @staticmethod
     def time_diff(start_time, end_time):
@@ -1102,13 +1137,13 @@ class Netflix(object):
                 secure = 'ssl'
                 port = 994
             else:
-                raise ValueError(f'「{username}」 是不受支持的邮箱。目前仅支持谷歌邮箱、QQ邮箱以及163邮箱，推荐使用谷歌邮箱。')
+                raise ValueError(f'「{username}」 是不受支持���邮箱。目前仅支持谷歌邮箱、QQ邮箱以及163邮箱，推荐使用谷歌邮箱。')
 
             # 格式化邮件内容
             if isinstance(content, list):
                 with open('./mail/{}.html'.format(template), 'r', encoding='utf-8') as f:
                     template_content = f.read()
-                    text = Netflix.MAIL_SYMBOL_REGEX.sub(Netflix.symbol_replace, template_content).format(*content)
+                    text = netflix.MAIL_SYMBOL_REGEX.sub(netflix.symbol_replace, template_content).format(*content)
                     real_content = text.replace('{{', '{').replace('}}', '}')
             elif isinstance(content, str):
                 real_content = content
@@ -1258,9 +1293,9 @@ class Netflix(object):
         :return:
         """
         try:
-            logger.debug(f'尝试登出 [账户：{u}]')
+            logger.debug(f'尝试登出 [账��：{u}]')
 
-            self.driver.get(Netflix.LOGOUT_URL)
+            self.driver.get(netflix.LOGOUT_URL)
 
             self.find_element_by_xpath('//a[@data-uia="header-login-link"]', timeout=4.9, poll_frequency=0.5,
                                        message='查找登入元素未果')
@@ -1292,10 +1327,10 @@ class Netflix(object):
         try:
             logger.debug('开始处理用户名被篡改的问题')
 
-            self.driver.get(Netflix.MANAGE_PROFILES_URL)
+            self.driver.get(netflix.MANAGE_PROFILES_URL)
 
             WebDriverWait(self.driver, timeout=3, poll_frequency=0.94).until(
-                lambda d: 'ManageProfiles' in d.current_url, f'{u} 可能非会员，无法访问 {Netflix.MANAGE_PROFILES_URL} 地址')
+                lambda d: 'ManageProfiles' in d.current_url, f'{u} 可能非会员，无法访问 {netflix.MANAGE_PROFILES_URL} 地址')
 
             # 五个子账户，逐个检查
             success_num = 0
@@ -1396,9 +1431,9 @@ class Netflix(object):
             try:
                 # 检查是否账户管理画面
                 if 'YourAccount' not in self.driver.current_url:
-                    self.driver.get(Netflix.ACCOUNT_URL)
+                    self.driver.get(netflix.ACCOUNT_URL)
                     WebDriverWait(self.driver, timeout=4.9, poll_frequency=0.94).until(
-                        lambda d: 'YourAccount' in d.current_url, f'{u} 可能非会员，无法访问 {Netflix.ACCOUNT_URL} 地址')
+                        lambda d: 'YourAccount' in d.current_url, f'{u} 可能非会员，无法访问 {netflix.ACCOUNT_URL} 地址')
 
                 # 定位到账户区域
                 self.find_element_by_xpath('//div[@class="profile-hub"]', scroll_into_view=True, block='center')
@@ -1463,19 +1498,17 @@ class Netflix(object):
         # 监听密码被改邮件
         last_protection_time = time.time()
         while True:
-            real_today = Netflix.today_()
+            real_today = netflix.today_()
             if self.today != real_today:
                 self.today = real_today
                 self.__logger_setting()
-
-            self.redis = redis.Redis(host=self.REDIS_HOST, port=self.REDIS_PORT, db=0, decode_responses=True)
-            self.redis.set_response_callback('GET', int)
 
             with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
                 all_tasks = {
                     executor.submit(self.pwd_result_mail_listener, item.get('u')): (item.get('u'), item.get('p')) for
                     item in
                     self.MULTIPLE_NETFLIX_ACCOUNTS}
+                
 
                 for future in as_completed(all_tasks):
                     try:
@@ -1486,7 +1519,7 @@ class Netflix(object):
                             continue
 
                         data, event_type = result
-                        event_reason = Netflix.get_event_reason(event_type)
+                        event_reason = netflix.get_event_reason(event_type)
                         start_time = time.time()
 
                         num = 1
@@ -1496,10 +1529,10 @@ class Netflix(object):
                                     self.__do_reset(u, p)  # 要么返回 True，要么抛异常
 
                                     logger.success('成功恢复原始密码')
-                                    Netflix.send_mail(
-                                        f'在 {Netflix.format_time(start_time)} 发现有人修改了 Netflix 账户 {u} 的密码，我已自动将密码恢复为初始状态',
+                                    netflix.send_mail(
+                                        f'在 {netflix.format_time(start_time)} 发现有人修改了 Netflix 账户 {u} 的密码，我已自动将密码恢复为初始状态',
                                         [
-                                            f'程式在 {self.now()} 已将密码恢复为初始状态，共耗时{Netflix.time_diff(start_time, time.time())}，本次自动处理成功。'])
+                                            f'程式在 {self.now()} 已将密码恢复为初始状态，共耗时{netflix.time_diff(start_time, time.time())}，本次自动处理成功。'])
 
                                     self.set_need_to_do(u, 0)
 
@@ -1507,7 +1540,7 @@ class Netflix(object):
                                 elif event_type == 2:  # Netflix 强迫用户修改密码
                                     # 重置为随机密码
                                     logger.info('尝试先修改为随机密码')
-                                    random_pwd = Netflix.gen_random_pwd(8)
+                                    random_pwd = netflix.gen_random_pwd(8)
                                     self.__do_reset(u, random_pwd)
 
                                     # 账户内自动修改为原始密码
@@ -1516,15 +1549,15 @@ class Netflix(object):
                                     self.set_need_to_do(u, 0)
 
                                     logger.success('成功从随机密码改回原始密码')
-                                    Netflix.send_mail(
-                                        f'在 {Netflix.format_time(start_time)} 发现 Netflix 强迫您修改账户 {u} 的密码，我已自动将密码恢复为初始状态',
+                                    netflix.send_mail(
+                                        f'在 {netflix.format_time(start_time)} 发现 Netflix 强迫您修改账户 {u} 的密码，我已自动将密码恢复为初始状态',
                                         [
-                                            f'程式在 {self.now()} 已将密码恢复为初始状态，共耗时{Netflix.time_diff(start_time, time.time())}，本次自动处理成功。'])
+                                            f'程式在 {self.now()} 已将密码恢复为初始状态，共耗时{netflix.time_diff(start_time, time.time())}，本次自动处理成功。'])
 
                                     break
                             except Exception as e:
                                 logger.warning(
-                                    f'在执行密码恢复操作过程中出错：{str(e)}，将重试，最多不超过 {self.max_num_of_attempts} 次 [{num}/{self.max_num_of_attempts}]')
+                                    f'在执行密码恢复��作过程中出错：{str(e)}，将重试，最多不超过 {self.max_num_of_attempts} 次 [{num}/{self.max_num_of_attempts}]')
                                 self.error_page_screenshot()
                             finally:
                                 # 超过最大尝试次数
@@ -1532,9 +1565,9 @@ class Netflix(object):
                                     logger.error('重试失败次数过多，已放弃本次恢复密码动作，将继续监听新的密码事件')
                                     self.set_need_to_do(u, 1)  # 恢复检测
 
-                                    Netflix.send_mail(f'主人，抱歉没能恢复 {u} 的密码，请尝试手动恢复', [
-                                        f'今次触发恢复密码的动作的原因为：{event_reason}。<br>发现时间：{Netflix.format_time(start_time)}<br><br>程式一共尝试了 {num} 次恢复密码，均以失败告终。我已将今天的日志以及这次出错画面的截图作为附件发送给您，请查收。'],
-                                                      files=[f'logs/{Netflix.now("%Y-%m-%d")}.log',
+                                    netflix.send_mail(f'主人，抱歉没能恢复 {u} 的密码，请尝试手动恢复', [
+                                        f'今次触发恢复密码的动作的原因为：{event_reason}。<br>发现时间：{netflix.format_time(start_time)}<br><br>程式一共尝试了 {num} 次恢复密码，均以失败告终。我已将今天的日志以及这次出错画面的截图作为附件发送给您，请查收。'],
+                                                      files=[f'logs/{netflix.now("%Y-%m-%d")}.log',
                                                              self.error_page_screenshot()])
 
                                     break
@@ -1543,7 +1576,7 @@ class Netflix(object):
                     except Exception as e:
                         logger.error('出错：{}', str(e))
 
-            time.sleep(3)
+            time.sleep(20)
 
             # 保护账户免受篡改与锁定
             if int(os.getenv('ENABLE_ACCOUNT_PROTECTION', 0)):
@@ -1553,9 +1586,52 @@ class Netflix(object):
                     self.protect_account()
 
             logger.debug('开始下一轮监听')
+    def run_travel_api(self, account_email):
+        """
+        监听指定账户的旅行邮件
+        :param account_email: Netflix账户邮箱
+        :return: 旅行链接或None
+        """
+        logger.info(f'开始监听账户 {account_email} 的旅行邮件')
+        try:
+            result = self.travel_mail_listener(account_email)
+            if result:
+                travel_url = result
+                logger.info(f'已成功提取旅行链接：{travel_url}')
+                return travel_url
+            return None
+        except Exception as e:
+            logger.error(f'监听旅行邮件出错：{str(e)}')
+            return None
 
+    def serve_frontend(self):
+        """
+        启动Gradio前端界面
+        """
+        import gradio as gr
+
+        def check_travel_mail(account_email:str):
+            logger.info(f"检查账户 {account_email} 的旅行邮件")
+            result = self.run_travel_api(account_email)
+            if result:
+                return f"找到旅行链接: {result}"
+            return "未找到旅行链接"
+
+        iface = gr.Interface(
+            fn=check_travel_mail,
+            inputs=gr.Textbox(label="Netflix账户邮箱",placeholder="abc@pandoo.ooo",type="email"),
+            outputs=gr.Textbox(label="检查结果"),
+            title="Netflix旅行邮件检查",
+            description="输入Netflix账户邮箱,检查是否收到旅行邮件",
+            allow_flagging='never'
+        )
+        try:
+            iface.launch(server_name="0.0.0.0",server_port=8080,share=False,debug=True) 
+        except Exception as e:
+            logger.error(f"启动Gradio界面出错: {str(e)}")
 
 if __name__ == '__main__':
-    Netflix = Netflix()
-    Netflix.run()
-    
+    netflix = netflix()
+    netflix.redis = redis.Redis(host=netflix.REDIS_HOST, port=netflix.REDIS_PORT, db=0, decode_responses=True)
+    netflix.redis.set_response_callback('GET', int)
+    netflix.serve_frontend()

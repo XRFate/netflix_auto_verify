@@ -3,3 +3,4 @@ python-dotenv==0.18.0
 loguru==0.5.3
 redis==3.5.3
 urllib3>=1.26.15,<2
+gradio==3.36.1

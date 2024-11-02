@@ -85,7 +85,10 @@ RUN pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --no-cache-dir -r re
 
 VOLUME ["/conf", "/app/logs"]
 
-RUN cp docker-entrypoint.sh /usr/local/bin/; \
+EXPOSE 8080
+
+RUN dos2unix docker-entrypoint.sh; \
+    cp docker-entrypoint.sh /usr/local/bin/; \
     chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["sh", "-c", "docker-entrypoint.sh"]
